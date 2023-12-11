@@ -1629,7 +1629,7 @@ ajv@^6.12.4:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-alchemy-sdk@^3.0.0:
+alchemy-sdk@^3.0.0, alchemy-sdk@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/alchemy-sdk/-/alchemy-sdk-3.1.0.tgz#cd4a03215d7502ea4c3e7548f7b837e25b461864"
   integrity sha512-KMzBo0Dq+cEqXegn4fh2sP74dhAngr9twIv2pBTyPq3/ZJs+aiXXlFzVrVUYaa6x9L7iQtqhz3YKFCuN5uvpAg==

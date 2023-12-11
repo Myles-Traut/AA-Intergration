@@ -1,14 +1,13 @@
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { Address, useAccount, useConnect, useDisconnect } from 'wagmi';
 import { InjectedConnector } from 'wagmi/connectors/injected';
 import { useRouter } from 'next/router';
-import { createWalletClient, http } from 'viem';
 import { goerli } from 'viem/chains';
-import { WalletClientSigner, getDefaultEntryPointAddress } from "@alchemy/aa-core";
+import { getDefaultEntryPointAddress } from "@alchemy/aa-core";
 import { useCallback, useState } from 'react';
 import { AlchemyProvider } from '@alchemy/aa-alchemy';
 import { LightSmartContractAccount, getDefaultLightAccountFactoryAddress } from '@alchemy/aa-accounts';
-import { privateKeyToAccount } from 'viem/accounts';
 import { useEoaSigner } from '@/hooks/useEoaSigner';
+import { Alchemy, Network } from "alchemy-sdk";
 
 const Home = () => {
   const { isConnected, address } = useAccount();
@@ -17,7 +16,12 @@ const Home = () => {
   });
   const { disconnect } = useDisconnect();
   const [scaAddress, setScaAddress] = useState<string>();
+  const [ethBalance, setEthBalance] = useState<string>();
   const router = useRouter();
+  const alchemy = new Alchemy({
+    network: Network.ETH_GOERLI,
+    apiKey: "0R20Qwh34mUfBv0mdMS_lJxrhH--egTt",
+  });
 
   const login = useCallback(async () => {
     const { signer } = useEoaSigner();
@@ -34,7 +38,9 @@ const Home = () => {
           factoryAddress: getDefaultLightAccountFactoryAddress(goerli),
         })
     );
-    setScaAddress(await provider.getAddress());
+    const contractAddress: `0x${string}` = await provider.getAddress();
+    setScaAddress(contractAddress);
+    setEthBalance((await alchemy.core.getBalance(contractAddress)).toString());
   },[]);
 
   return (
@@ -51,6 +57,7 @@ const Home = () => {
       className="w-full h-12 px-6 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
       onClick={login}>Deploy SCA</button>
       <div>SCA ADDRESS: {scaAddress}</div>
+      <div>SCA Balance: {ethBalance}</div>
       </div> :
       <button 
       className="w-full h-12 px-6 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
