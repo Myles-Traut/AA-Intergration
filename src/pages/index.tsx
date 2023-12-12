@@ -1,25 +1,18 @@
 import { useAccount, useConnect, useContractRead, useDisconnect } from 'wagmi';
 import { InjectedConnector } from 'wagmi/connectors/injected';
 import { useRouter } from 'next/router';
-import { getDefaultEntryPointAddress } from "@alchemy/aa-core";
+import { WalletClientSigner, getDefaultEntryPointAddress } from "@alchemy/aa-core";
 import { useCallback, useState, useRef, MutableRefObject } from 'react';
 import { AlchemyProvider } from '@alchemy/aa-alchemy';
 import { LightSmartContractAccount, getDefaultLightAccountFactoryAddress } from '@alchemy/aa-accounts';
 import { useEoaSigner } from '@/hooks/useEoaSigner';
-import { Alchemy, BigNumber, Network } from "alchemy-sdk";
+import { Alchemy, Network } from "alchemy-sdk";
 import { chain, alchemyApiKey } from "@/config/client";
 import { getRpcUrl } from "@/config/rpc";
-import PurchaseTokenForm from '@/components/PurchaseTokenForm';
-import { parseEther, encodeFunctionData, Address } from 'viem';
+import { parseEther, encodeFunctionData, Address, WalletClientConfig } from 'viem';
 import { tokenSaleAbi } from '../../abis/TokenPresale';
 import { createPublicClient, http } from 'viem'
 import { polygon } from 'viem/chains';
-
-type Args = {
-  data: bigint | undefined
-  isError: boolean
-  isLoading: boolean
-}
 
 const Home = () => {
   const { isConnected, address } = useAccount();
@@ -38,9 +31,9 @@ const Home = () => {
   const [amount, setAmount] = useState<string>('');
   const [to, setTo] = useState<string>("");
   const [tokenAmount, setTokenAmount] = useState<string>('');
-  const tokenAmountRef: MutableRefObject<string> = useRef("0");
 
   const router = useRouter();
+
   const alchemy = new Alchemy({
     network: Network.MATIC_MAINNET,
     apiKey: alchemyApiKey,
@@ -50,13 +43,11 @@ const Home = () => {
     chain: polygon,
     transport: http()
   });
+  
+  const { signer } = useEoaSigner();
 
-  function handleChange(e: any) {
-    // ✅ Updating a controlled input to e.target.value synchronously
-    setTokenAmount(e.target.value);
-  }
-  const login = useCallback(async () => {
-    const { signer } = useEoaSigner();
+  const login = useCallback(async (signer: WalletClientSigner) => {
+    // const { signer } = useEoaSigner();
     const provider: AlchemyProvider = new AlchemyProvider({
       apiKey: alchemyApiKey,
       chain: polygon,
@@ -90,10 +81,10 @@ const Home = () => {
           args: [contractAddress]
         })
     setTokenBal(data.toString());
-  },[]);
+  },[alchemy.core, publicClient]);
 
-  const sendETH = useCallback(async(amount: string, to: string) => {
-    const { signer } = useEoaSigner();
+  const sendETH = useCallback(async(signer: WalletClientSigner, amount: string, to: string) => {
+    // const { signer } = useEoaSigner();
     const provider: AlchemyProvider = new AlchemyProvider({
       apiKey: alchemyApiKey,
       chain: polygon,
@@ -122,10 +113,10 @@ const Home = () => {
     // Wait for the user operation to be mined
     const txHash = await provider.waitForUserOperationTransaction(uoHash);
     console.log("Transaction Hash: ", txHash);
-  }, []); 
+  },[]); 
 
-  const buyToken = useCallback(async(tokenAmount: any) => {
-    const { signer } = useEoaSigner();
+  const buyToken = useCallback(async(signer: WalletClientSigner, tokenAmount: any) => {
+    // const { signer } = useEoaSigner();
     console.log("Token Amount", tokenAmount);
     const provider: AlchemyProvider = new AlchemyProvider({
       apiKey: alchemyApiKey,
@@ -161,8 +152,8 @@ const Home = () => {
     console.log(txHash);
   }, []);
 
-  const getTokenBalance = useCallback(async() => {
-    const { signer } = useEoaSigner();
+  const getTokenBalance = useCallback(async(signer: WalletClientSigner) => {
+    // const { signer } = useEoaSigner();
     const provider: AlchemyProvider = new AlchemyProvider({
       apiKey: alchemyApiKey,
       chain: polygon,
@@ -185,7 +176,7 @@ const Home = () => {
     })
     console.log(data);
     setTokenBal(data.toString());
-  }, []);
+  }, [publicClient]);
 
   return (
     <div className="ml-4 mt-4">
@@ -203,7 +194,7 @@ const Home = () => {
       <br />
       <form onSubmit={(e) => {
             e.preventDefault();
-            sendETH(amount, to);
+            sendETH(signer, amount, to);
         }}>
             <label htmlFor="Transfer ETH" className="pr-4">Transfer ETH</label>
             <div>
@@ -238,7 +229,7 @@ const Home = () => {
         
         <form onSubmit={e => {
           e.preventDefault();
-          buyToken(tokenAmount);
+          buyToken(signer, tokenAmount);
         }}>
           <label htmlFor="Buy Token" className="pr-4">Amount to Spend</label>
             <input
@@ -255,7 +246,7 @@ const Home = () => {
           </button>
         </form>
         
-        <div><button className= "h-10 px-5 m-2 text-green-100 bg-green-700 rounded-lg hover:bg-green-800" onClick={getTokenBalance}>Get balance</button>
+        <div><button className= "h-10 px-5 m-2 text-green-100 bg-green-700 rounded-lg hover:bg-green-800" onClick={() => {getTokenBalance(signer)}}>Get balance</button>
         Token Balance: {tokenBal}</div>
       </div>
        :
@@ -263,8 +254,8 @@ const Home = () => {
       className="w-full h-12 px-6 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
       onClick={() => {
         connect();
-        login();
-        getTokenBalance();
+        login(signer);
+        getTokenBalance(signer);
       }}>Connect Wallet</button>
       }
     </div>
