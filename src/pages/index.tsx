@@ -46,6 +46,7 @@ const Home = () => {
   
   const { signer } = useEoaSigner();
 
+  /*--- Login Function ---*/
   const login = useCallback(async (signer: WalletClientSigner) => {
     // const { signer } = useEoaSigner();
     const provider: AlchemyProvider = new AlchemyProvider({
@@ -83,6 +84,7 @@ const Home = () => {
     setTokenBal(data.toString());
   },[alchemy.core, publicClient]);
 
+  /*--- Send Native Currency Function ---*/
   const sendETH = useCallback(async(signer: WalletClientSigner, amount: string, to: string) => {
     // const { signer } = useEoaSigner();
     const provider: AlchemyProvider = new AlchemyProvider({
@@ -115,6 +117,7 @@ const Home = () => {
     console.log("Transaction Hash: ", txHash);
   },[]); 
 
+  /*--- Buy Tokens Function ---*/
   const buyToken = useCallback(async(signer: WalletClientSigner, tokenAmount: any) => {
     // const { signer } = useEoaSigner();
     console.log("Token Amount", tokenAmount);
@@ -152,6 +155,7 @@ const Home = () => {
     console.log(txHash);
   }, []);
 
+  /*--- Get Token Balance Function ---*/
   const getTokenBalance = useCallback(async(signer: WalletClientSigner) => {
     // const { signer } = useEoaSigner();
     const provider: AlchemyProvider = new AlchemyProvider({
