@@ -2,7 +2,7 @@ import { useAccount, useConnect, useContractRead, useDisconnect } from 'wagmi';
 import { InjectedConnector } from 'wagmi/connectors/injected';
 import { useRouter } from 'next/router';
 import { getDefaultEntryPointAddress } from "@alchemy/aa-core";
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useRef, MutableRefObject } from 'react';
 import { AlchemyProvider } from '@alchemy/aa-alchemy';
 import { LightSmartContractAccount, getDefaultLightAccountFactoryAddress } from '@alchemy/aa-accounts';
 import { useEoaSigner } from '@/hooks/useEoaSigner';
@@ -13,7 +13,7 @@ import PurchaseTokenForm from '@/components/PurchaseTokenForm';
 import { parseEther, encodeFunctionData, Address } from 'viem';
 import { tokenSaleAbi } from '../../abis/TokenPresale';
 import { createPublicClient, http } from 'viem'
-import { goerli } from 'viem/chains';
+import { polygon } from 'viem/chains';
 
 type Args = {
   data: bigint | undefined
@@ -38,23 +38,28 @@ const Home = () => {
   const [amount, setAmount] = useState<string>('');
   const [to, setTo] = useState<string>("");
   const [tokenAmount, setTokenAmount] = useState<string>('');
+  const tokenAmountRef: MutableRefObject<string> = useRef("0");
 
   const router = useRouter();
   const alchemy = new Alchemy({
-    network: Network.ETH_GOERLI,
+    network: Network.MATIC_MAINNET,
     apiKey: alchemyApiKey,
     
   });
   const publicClient = createPublicClient({
-    chain: goerli,
+    chain: polygon,
     transport: http()
   });
 
+  function handleChange(e: any) {
+    // ✅ Updating a controlled input to e.target.value synchronously
+    setTokenAmount(e.target.value);
+  }
   const login = useCallback(async () => {
     const { signer } = useEoaSigner();
     const provider: AlchemyProvider = new AlchemyProvider({
       apiKey: alchemyApiKey,
-      chain: goerli,
+      chain: polygon,
       opts: {
         txMaxRetries: 20,
         txRetryIntervalMs: 2_000,
@@ -66,18 +71,20 @@ const Home = () => {
         new LightSmartContractAccount({
           rpcClient,
           owner: signer,
-          chain: goerli,
-          entryPointAddress: getDefaultEntryPointAddress(goerli),
-          factoryAddress: getDefaultLightAccountFactoryAddress(goerli),
+          chain: polygon,
+          entryPointAddress: getDefaultEntryPointAddress(polygon),
+          factoryAddress: getDefaultLightAccountFactoryAddress(polygon),
         })
     );
     const contractAddress: `0x${string}` = await provider.getAddress();
     setScaAddress(contractAddress);
     setEthBalance((await alchemy.core.getBalance(contractAddress)).toString());
     setCurrentProvider(provider);
-
+    
+    // 0x8179C04ed42683eafd59d66236484E090016Db56 polygon
+    // 0xD055B32fd3136F1dCA638Cd8f4B2eAF4A10abAb3 goerli
     const data = await publicClient.readContract({
-          address: '0xD055B32fd3136F1dCA638Cd8f4B2eAF4A10abAb3',
+          address: '0x8179C04ed42683eafd59d66236484E090016Db56',
           abi: tokenSaleAbi,
           functionName: 'userHubBalance',
           args: [contractAddress]
@@ -85,11 +92,11 @@ const Home = () => {
     setTokenBal(data.toString());
   },[]);
 
-  const sendETH = useCallback(async() => {
+  const sendETH = useCallback(async(amount: string, to: string) => {
     const { signer } = useEoaSigner();
     const provider: AlchemyProvider = new AlchemyProvider({
       apiKey: alchemyApiKey,
-      chain: goerli,
+      chain: polygon,
       opts: {
         txMaxRetries: 20,
         txRetryIntervalMs: 2_000,
@@ -117,11 +124,12 @@ const Home = () => {
     console.log("Transaction Hash: ", txHash);
   }, []); 
 
-  const buyToken = useCallback(async() => {
+  const buyToken = useCallback(async(tokenAmount: any) => {
     const { signer } = useEoaSigner();
+    console.log("Token Amount", tokenAmount);
     const provider: AlchemyProvider = new AlchemyProvider({
       apiKey: alchemyApiKey,
-      chain: goerli,
+      chain: polygon,
       opts: {
         txMaxRetries: 20,
         txRetryIntervalMs: 2_000,
@@ -143,7 +151,7 @@ const Home = () => {
       args: [await provider.getAddress()],
     });
     const uo = await provider.sendUserOperation({
-      target: "0xD055B32fd3136F1dCA638Cd8f4B2eAF4A10abAb3",
+      target: "0x8179C04ed42683eafd59d66236484E090016Db56",
       data: uoCallData,
       value: parseEther(tokenAmount),
     });
@@ -157,7 +165,7 @@ const Home = () => {
     const { signer } = useEoaSigner();
     const provider: AlchemyProvider = new AlchemyProvider({
       apiKey: alchemyApiKey,
-      chain: goerli,
+      chain: polygon,
     }).connect(
       (rpcClient) =>
         new LightSmartContractAccount({
@@ -170,7 +178,7 @@ const Home = () => {
     
     const contractAddr = await provider.getAddress();
     const data = await publicClient.readContract({
-      address: '0xD055B32fd3136F1dCA638Cd8f4B2eAF4A10abAb3',
+      address: '0x8179C04ed42683eafd59d66236484E090016Db56',
       abi: tokenSaleAbi,
       functionName: 'userHubBalance',
       args: [contractAddr]
@@ -191,19 +199,20 @@ const Home = () => {
       <div>Signer Address: {address}</div>
       <div>Smart Wallet Address: {scaAddress}</div>
       <div>Smart Wallet Balance: {ethBalance}</div>
+      <hr />
       <br />
       <form onSubmit={(e) => {
             e.preventDefault();
-            sendETH();
+            sendETH(amount, to);
         }}>
             <label htmlFor="Transfer ETH" className="pr-4">Transfer ETH</label>
             <div>
               <input
                 value={amount}
                 className="text-black pl-2"  
-                name="amuont" 
+                id="amount" 
                 placeholder="0.001 ETH"
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={e => setAmount(e.target.value)}
             />
             </div>
             <div>
@@ -212,33 +221,35 @@ const Home = () => {
                   className="text-black pl-2"  
                   id="destination" 
                   placeholder="0x.."
-                  onChange={(e) => setTo(e.target.value)}
+                  onChange={e => setTo(e.target.value)}
               />
             </div>
             <div className="mt-4">
-                <button 
+                <button type='submit'
                     className= "h-10 px-5 m-2 text-green-100 bg-green-700 rounded-lg hover:bg-green-800">
                     Transfer ETH
                 </button>
             </div>
             <hr />
+            <br />
             <div>
-            </div>
+          </div>
         </form>
         
-        <form onSubmit={(e) => {
+        <form onSubmit={e => {
           e.preventDefault();
-          buyToken();
+          buyToken(tokenAmount);
         }}>
           <label htmlFor="Buy Token" className="pr-4">Amount to Spend</label>
             <input
               value={tokenAmount}
-              className="text-black pl-2"  
-              id="Buy" 
+              className="text-black pl-2" 
+              id="Buy"  
               placeholder="0.001 ETH"
-              onChange={(e) => setTokenAmount(e.target.value)}
+              onChange={e => setTokenAmount(e.target.value)}
           />
-          <button 
+          <div>{tokenAmount}</div>
+          <button type='submit'
               className= "h-10 px-5 m-2 text-green-100 bg-green-700 rounded-lg hover:bg-green-800">
               Buy Token
           </button>

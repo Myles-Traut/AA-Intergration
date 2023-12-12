@@ -1,11 +1,11 @@
 import { createWalletClient, custom } from "viem";
-import { goerli } from "viem/chains";
+import { polygon } from "viem/chains";
 import { WalletClientSigner } from "@alchemy/aa-core";
 
 export const useEoaSigner = () => {
 
     const client = createWalletClient({
-        chain: goerli,
+        chain: polygon,
         transport: custom(window.ethereum),
       });
       
