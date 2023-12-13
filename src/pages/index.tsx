@@ -10,7 +10,7 @@ import { useAlchemyProvider } from '@/hooks/useAlchemyProvider';
 
 import { Alchemy, Network } from "alchemy-sdk";
 import { chain, alchemyApiKey } from "@/config/client";
-import { parseEther, encodeFunctionData, Address, WalletClientConfig } from 'viem';
+import { parseEther, encodeFunctionData, Address, WalletClientConfig, Hash } from 'viem';
 import { tokenSaleAbi } from '../../abis/TokenPresale';
 import { createPublicClient, http } from 'viem'
 import { polygon } from 'viem/chains';
@@ -33,6 +33,9 @@ const Home = () => {
   const [amount, setAmount] = useState<string>('');
   const [to, setTo] = useState<string>("");
   const [tokenAmount, setTokenAmount] = useState<string>('');
+
+  const [uoHash, setUoHash] = useState<Hash>();
+  const [txHash, setTxHash] = useState<Hash>();
 
   const router = useRouter();
 
@@ -73,35 +76,17 @@ const Home = () => {
   }, [disconnect, disconnectProviderFromAccount]);
 
   /*--- Send Native Currency Function ---*/
-  const sendETH = useCallback(async(signer: WalletClientSigner, amount: string, to: string) => {
-    // const { signer } = useEoaSigner();
-    const provider: AlchemyProvider = new AlchemyProvider({
-      apiKey: alchemyApiKey,
-      chain: polygon,
-      opts: {
-        txMaxRetries: 20,
-        txRetryIntervalMs: 2_000,
-        txRetryMulitplier: 1.5,
-        minPriorityFeePerBid: 100_000_000n,
-      },
-    }).connect(
-      (rpcClient) =>
-        new LightSmartContractAccount({
-          chain,
-          owner: signer,
-          factoryAddress: getDefaultLightAccountFactoryAddress(chain),
-          rpcClient,
-        })
-    );
+  const sendETH = useCallback(async(amount: string, to: string) => {
     const { hash: uoHash } = await provider.sendUserOperation({
-      target: to as Address,//"0x5f05970cFd02Bf70627CDDEE292f068C3a4EdCF6" as Address, // The desired target contract address
+      target: to as Address, // The desired target contract address
       data: "0x", // The desired call data
       value: parseEther(amount), // (Optional) value to send the target contract address
     });
-    console.log(amount); 
-    console.log("UserOperation Hash: ", uoHash); // Log the user operation hash
+    setUoHash(uoHash);
+    console.log("Uo Hash: ", uoHash);
     // Wait for the user operation to be mined
     const txHash = await provider.waitForUserOperationTransaction(uoHash);
+    setTxHash(txHash);
     console.log("Transaction Hash: ", txHash);
   },[]); 
 
@@ -186,7 +171,7 @@ const Home = () => {
       <br />
       <form onSubmit={(e) => {
             e.preventDefault();
-            sendETH(signer, amount, to);
+            sendETH(amount, to);
         }}>
             <label htmlFor="Transfer ETH" className="pr-4">Transfer ETH</label>
             <div>
