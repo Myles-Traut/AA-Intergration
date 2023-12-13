@@ -77,6 +77,8 @@ const Home = () => {
   const logout: () => void = useCallback(() => {
     disconnectProviderFromAccount();
     setIsLoggedIn(false);
+    setTxHash(undefined);
+    setUoHash(undefined);
   }, [disconnectProviderFromAccount]);
 
   return (
