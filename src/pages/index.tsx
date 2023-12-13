@@ -1,18 +1,23 @@
-import { useAccount, useConnect, useContractRead, useDisconnect } from 'wagmi';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { InjectedConnector } from 'wagmi/connectors/injected';
 import { useRouter } from 'next/router';
-import { WalletClientSigner, getDefaultEntryPointAddress } from "@alchemy/aa-core";
-import { useCallback, useState, useRef, MutableRefObject } from 'react';
+import { WalletClientSigner } from "@alchemy/aa-core";
+import { useCallback, useState } from 'react';
 import { AlchemyProvider } from '@alchemy/aa-alchemy';
 import { LightSmartContractAccount, getDefaultLightAccountFactoryAddress } from '@alchemy/aa-accounts';
 import { useEoaSigner } from '@/hooks/useEoaSigner';
+import { useAlchemyProvider } from '@/hooks/useAlchemyProvider';
+
 import { Alchemy, Network } from "alchemy-sdk";
 import { chain, alchemyApiKey } from "@/config/client";
-import { getRpcUrl } from "@/config/rpc";
 import { parseEther, encodeFunctionData, Address, WalletClientConfig } from 'viem';
 import { tokenSaleAbi } from '../../abis/TokenPresale';
 import { createPublicClient, http } from 'viem'
 import { polygon } from 'viem/chains';
+
+///@dev Token Presale contract addresses:
+  // 0x8179C04ed42683eafd59d66236484E090016Db56 polygon
+  // 0xD055B32fd3136F1dCA638Cd8f4B2eAF4A10abAb3 goerli
 
 const Home = () => {
   const { isConnected, address } = useAccount();
@@ -20,14 +25,11 @@ const Home = () => {
     connector: new InjectedConnector(),
   });
   const { disconnect } = useDisconnect();
+
   const [scaAddress, setScaAddress] = useState<Address>();
-  const [ethBalance, setEthBalance] = useState<string>("");
+  const [nativeBalance, setNativeBalance] = useState<string>("");
   const [tokenBal, setTokenBal] = useState<string>("");
-  const [currentProvider, setCurrentProvider] = useState<AlchemyProvider>(
-    new AlchemyProvider({
-    chain,
-    rpcUrl: getRpcUrl(),
-  }))
+  
   const [amount, setAmount] = useState<string>('');
   const [to, setTo] = useState<string>("");
   const [tokenAmount, setTokenAmount] = useState<string>('');
@@ -45,36 +47,15 @@ const Home = () => {
   });
   
   const { signer } = useEoaSigner();
+  const { provider, connectProviderToAccount, disconnectProviderFromAccount } = useAlchemyProvider();
 
   /*--- Login Function ---*/
   const login = useCallback(async (signer: WalletClientSigner) => {
-    // const { signer } = useEoaSigner();
-    const provider: AlchemyProvider = new AlchemyProvider({
-      apiKey: alchemyApiKey,
-      chain: polygon,
-      opts: {
-        txMaxRetries: 20,
-        txRetryIntervalMs: 2_000,
-        txRetryMulitplier: 1.5,
-        minPriorityFeePerBid: 100_000_000n,
-      },
-    }).connect(
-      (rpcClient) =>
-        new LightSmartContractAccount({
-          rpcClient,
-          owner: signer,
-          chain: polygon,
-          entryPointAddress: getDefaultEntryPointAddress(polygon),
-          factoryAddress: getDefaultLightAccountFactoryAddress(polygon),
-        })
-    );
+    connectProviderToAccount(signer);
     const contractAddress: `0x${string}` = await provider.getAddress();
     setScaAddress(contractAddress);
-    setEthBalance((await alchemy.core.getBalance(contractAddress)).toString());
-    setCurrentProvider(provider);
+    setNativeBalance((await alchemy.core.getBalance(contractAddress)).toString());
     
-    // 0x8179C04ed42683eafd59d66236484E090016Db56 polygon
-    // 0xD055B32fd3136F1dCA638Cd8f4B2eAF4A10abAb3 goerli
     const data = await publicClient.readContract({
           address: '0x8179C04ed42683eafd59d66236484E090016Db56',
           abi: tokenSaleAbi,
@@ -193,7 +174,7 @@ const Home = () => {
       onClick={() => {disconnect(); router.push('/')}}>Disconnect</button>
       <div>Signer Address: {address}</div>
       <div>Smart Wallet Address: {scaAddress}</div>
-      <div>Smart Wallet Balance: {ethBalance}</div>
+      <div>Smart Wallet Balance: {nativeBalance}</div>
       <hr />
       <br />
       <form onSubmit={(e) => {
