@@ -50,7 +50,8 @@ const Home = () => {
   const { provider, connectProviderToAccount, disconnectProviderFromAccount } = useAlchemyProvider();
 
   /*--- Login Function ---*/
-  const login = useCallback(async (signer: WalletClientSigner) => {
+  const login: (signer: WalletClientSigner) => Promise<void> = useCallback(async (signer: WalletClientSigner) => {
+    connect();
     connectProviderToAccount(signer);
     const contractAddress: `0x${string}` = await provider.getAddress();
     setScaAddress(contractAddress);
@@ -64,6 +65,12 @@ const Home = () => {
         })
     setTokenBal(data.toString());
   },[alchemy.core, publicClient]);
+
+  /*------ Logout Function ------*/
+  const logout: () => void = useCallback(() => {
+    disconnect();
+    disconnectProviderFromAccount();
+  }, [disconnectProviderFromAccount]);
 
   /*--- Send Native Currency Function ---*/
   const sendETH = useCallback(async(signer: WalletClientSigner, amount: string, to: string) => {
@@ -171,7 +178,7 @@ const Home = () => {
       <div>
       <button
       className="w-full h-12 px-6 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
-      onClick={() => {disconnect(); router.push('/')}}>Disconnect</button>
+      onClick={() => {logout(); router.push('/')}}>Disconnect</button>
       <div>Signer Address: {address}</div>
       <div>Smart Wallet Address: {scaAddress}</div>
       <div>Smart Wallet Balance: {nativeBalance}</div>
@@ -238,9 +245,7 @@ const Home = () => {
       <button 
       className="w-full h-12 px-6 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
       onClick={() => {
-        connect();
         login(signer);
-        getTokenBalance(signer);
       }}>Connect Wallet</button>
       }
     </div>
