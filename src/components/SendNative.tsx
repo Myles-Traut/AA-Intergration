@@ -1,5 +1,3 @@
-import { useAlchemyProvider } from '@/hooks/useAlchemyProvider';
-import { AlchemyProvider } from 'alchemy-sdk';
 import { Dispatch, SetStateAction, useCallback, useState } from 'react';
 import { Address, parseEther } from 'viem';
 

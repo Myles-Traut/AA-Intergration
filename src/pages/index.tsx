@@ -14,6 +14,7 @@ import { createPublicClient, http } from 'viem'
 import { polygon } from 'viem/chains';
 
 import SendNative from '@/components/SendNative';
+import BuyTokens from '@/components/BuyTokens';
 
 ///@dev Token Presale contract addresses:
   // 0x8179C04ed42683eafd59d66236484E090016Db56 polygon
@@ -29,8 +30,6 @@ const Home = () => {
   const [scaAddress, setScaAddress] = useState<Address>();
   const [nativeBalance, setNativeBalance] = useState<string>("");
   const [tokenBal, setTokenBal] = useState<string>("");
-  
-  const [tokenAmount, setTokenAmount] = useState<string>('');
 
   const [uoHash, setUoHash] = useState<Hash>();
   const [txHash, setTxHash] = useState<Hash>();
@@ -78,28 +77,6 @@ const Home = () => {
     disconnectProviderFromAccount();
   }, [disconnect, disconnectProviderFromAccount]);
 
-  /*--- Buy Tokens Function ---*/
-  const buyToken = useCallback(async(tokenAmount: string) => {
-    const uoCallData = encodeFunctionData({
-      abi: tokenSaleAbi,
-      functionName: 'buyHub',
-      args: [await provider.getAddress()],
-    });
-    const uo = await provider.sendUserOperation({
-      target: "0x8179C04ed42683eafd59d66236484E090016Db56",
-      data: uoCallData,
-      value: parseEther(tokenAmount),
-    });
-    setUoHash(uo.hash);
-    console.log(uo.hash);
-    const txHash = await provider.waitForUserOperationTransaction(uo.hash);
-    if(txHash){
-      setTxHash(txHash);
-      getTokenBalance();
-    }
-    console.log(txHash);
-  }, [provider, getTokenBalance]);
-
   return (
     <div className="ml-4 mt-4">
     <div>Home</div>
@@ -115,27 +92,8 @@ const Home = () => {
       <hr />
       <br />
       <SendNative setUoHash={setUoHash} setTxHash={setTxHash} provider={provider}/>
-        
-        <form onSubmit={e => {
-          e.preventDefault();
-          buyToken(tokenAmount);
-        }}>
-          <label htmlFor="Buy Token" className="pr-4">Amount to Spend</label>
-            <input
-              value={tokenAmount}
-              className="text-black pl-2" 
-              id="Buy"  
-              placeholder="0.001 ETH"
-              onChange={e => setTokenAmount(e.target.value)}
-          />
-          <button type='submit'
-              className= "h-10 px-5 m-2 text-green-100 bg-green-700 rounded-lg hover:bg-green-800">
-              Buy Token
-          </button>
-        </form>
-        
-        <div><button className= "h-10 px-5 m-2 text-green-100 bg-green-700 rounded-lg hover:bg-green-800" onClick={() => {getTokenBalance()}}>Get balance</button>
-        Token Balance: {tokenBal}</div>
+      <BuyTokens setUoHash={setUoHash} setTxHash={setTxHash} provider={provider} getTokenBalance={getTokenBalance}/>
+      <div>Token Balance: {tokenBal}</div>
       </div>
        :
       <button 
