@@ -64,13 +64,13 @@ const Home = () => {
           args: [contractAddress]
         })
     setTokenBal(data.toString());
-  },[alchemy.core, publicClient]);
+  },[connect, connectProviderToAccount, provider, alchemy.core, publicClient]);
 
   /*------ Logout Function ------*/
   const logout: () => void = useCallback(() => {
     disconnect();
     disconnectProviderFromAccount();
-  }, [disconnectProviderFromAccount]);
+  }, [disconnect, disconnectProviderFromAccount]);
 
   /*--- Send Native Currency Function ---*/
   const sendETH = useCallback(async(signer: WalletClientSigner, amount: string, to: string) => {
