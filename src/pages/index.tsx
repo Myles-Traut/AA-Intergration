@@ -3,17 +3,17 @@ import { InjectedConnector } from 'wagmi/connectors/injected';
 import { useRouter } from 'next/router';
 import { WalletClientSigner } from "@alchemy/aa-core";
 import { useCallback, useState } from 'react';
-import { AlchemyProvider } from '@alchemy/aa-alchemy';
-import { LightSmartContractAccount, getDefaultLightAccountFactoryAddress } from '@alchemy/aa-accounts';
 import { useEoaSigner } from '@/hooks/useEoaSigner';
 import { useAlchemyProvider } from '@/hooks/useAlchemyProvider';
 
 import { Alchemy, Network } from "alchemy-sdk";
-import { chain, alchemyApiKey } from "@/config/client";
-import { parseEther, encodeFunctionData, Address, WalletClientConfig, Hash } from 'viem';
+import { alchemyApiKey } from "@/config/client";
+import { parseEther, encodeFunctionData, Address, Hash } from 'viem';
 import { tokenSaleAbi } from '../../abis/TokenPresale';
 import { createPublicClient, http } from 'viem'
 import { polygon } from 'viem/chains';
+
+import SendNative from '@/components/SendNative';
 
 ///@dev Token Presale contract addresses:
   // 0x8179C04ed42683eafd59d66236484E090016Db56 polygon
@@ -30,8 +30,6 @@ const Home = () => {
   const [nativeBalance, setNativeBalance] = useState<string>("");
   const [tokenBal, setTokenBal] = useState<string>("");
   
-  const [amount, setAmount] = useState<string>('');
-  const [to, setTo] = useState<string>("");
   const [tokenAmount, setTokenAmount] = useState<string>('');
 
   const [uoHash, setUoHash] = useState<Hash>();
@@ -52,37 +50,6 @@ const Home = () => {
   const { signer } = useEoaSigner();
   const { provider, connectProviderToAccount, disconnectProviderFromAccount } = useAlchemyProvider();
 
-  /*--- Login Function ---*/
-  const login: (signer: WalletClientSigner) => Promise<void> = useCallback(async (signer: WalletClientSigner) => {
-    connect();
-    connectProviderToAccount(signer);
-    const contractAddress: `0x${string}` = await provider.getAddress();
-    setScaAddress(contractAddress);
-    setNativeBalance((await alchemy.core.getBalance(contractAddress)).toString());
-    getTokenBalance(); 
-  },[connect, connectProviderToAccount, provider, alchemy.core, publicClient]);
-
-  /*------ Logout Function ------*/
-  const logout: () => void = useCallback(() => {
-    disconnect();
-    disconnectProviderFromAccount();
-  }, [disconnect, disconnectProviderFromAccount]);
-
-  /*--- Send Native Currency Function ---*/
-  const sendNative = useCallback(async(amount: string, to: string) => {
-    const { hash: uoHash } = await provider.sendUserOperation({
-      target: to as Address, // The desired target contract address
-      data: "0x", // The desired call data
-      value: parseEther(amount), // (Optional) value to send the target contract address
-    });
-    setUoHash(uoHash);
-    console.log("Uo Hash: ", uoHash);
-    // Wait for the user operation to be mined
-    const txHash = await provider.waitForUserOperationTransaction(uoHash);
-    setTxHash(txHash);
-    console.log("Transaction Hash: ", txHash);
-  },[provider]); 
-
   /*--- Get Token Balance Function ---*/
   const getTokenBalance = useCallback(async() => {
     const contractAddr = await provider.getAddress();
@@ -92,9 +59,24 @@ const Home = () => {
       functionName: 'userHubBalance',
       args: [contractAddr]
     })
-    console.log(data);
     setTokenBal(data.toString());
-  }, [publicClient]);
+  }, [publicClient, provider]);
+
+  /*--- Login Function ---*/
+  const login: (signer: WalletClientSigner) => Promise<void> = useCallback(async (signer: WalletClientSigner) => {
+    connect();
+    connectProviderToAccount(signer);
+    const contractAddress: `0x${string}` = await provider.getAddress();
+    setScaAddress(contractAddress);
+    setNativeBalance((await alchemy.core.getBalance(contractAddress)).toString());
+    getTokenBalance(); 
+  },[connect, connectProviderToAccount, provider, alchemy.core, getTokenBalance]);
+
+  /*------ Logout Function ------*/
+  const logout: () => void = useCallback(() => {
+    disconnect();
+    disconnectProviderFromAccount();
+  }, [disconnect, disconnectProviderFromAccount]);
 
   /*--- Buy Tokens Function ---*/
   const buyToken = useCallback(async(tokenAmount: string) => {
@@ -116,7 +98,7 @@ const Home = () => {
       getTokenBalance();
     }
     console.log(txHash);
-  }, [provider]);
+  }, [provider, getTokenBalance]);
 
   return (
     <div className="ml-4 mt-4">
@@ -132,40 +114,7 @@ const Home = () => {
       <div>Smart Wallet Balance: {nativeBalance}</div>
       <hr />
       <br />
-      <form onSubmit={(e) => {
-            e.preventDefault();
-            sendNative(amount, to);
-        }}>
-            <label htmlFor="Transfer ETH" className="pr-4">Transfer ETH</label>
-            <div>
-              <input
-                value={amount}
-                className="text-black pl-2"  
-                id="amount" 
-                placeholder="0.001 ETH"
-                onChange={e => setAmount(e.target.value)}
-            />
-            </div>
-            <div>
-              <input
-                  value= {to}
-                  className="text-black pl-2"  
-                  id="destination" 
-                  placeholder="0x.."
-                  onChange={e => setTo(e.target.value)}
-              />
-            </div>
-            <div className="mt-4">
-                <button type='submit'
-                    className= "h-10 px-5 m-2 text-green-100 bg-green-700 rounded-lg hover:bg-green-800">
-                    Transfer ETH
-                </button>
-            </div>
-            <hr />
-            <br />
-            <div>
-          </div>
-        </form>
+      <SendNative setUoHash={setUoHash} setTxHash={setTxHash} provider={provider}/>
         
         <form onSubmit={e => {
           e.preventDefault();
