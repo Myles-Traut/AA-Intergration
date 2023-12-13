@@ -79,10 +79,10 @@ const Home = () => {
 
   return (
     <div className="ml-4 mt-4">
-    <h1 className="text-center mb-4 text-2xl underline">Account Abstraction Demo</h1>
+    <h1 className="text-center mb-2 text-2xl underline">Account Abstraction Demo</h1>
     <div className="flex relative items-center" >
       {isConnected ? 
-      <div className="w-full mt-8">
+      <div className="w-full mt-4">
         <div className="w-full flex relative items-center justify-center">
           <button
           className="h-8 px-2 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
@@ -112,9 +112,16 @@ const Home = () => {
           </div>
         </div>
       </div>
+      {txHash && (
+        <div className="flex relative mt-1 items-center justify-center">
+          <a
+            href={`https://polygonscan.com/tx/${txHash}`}
+            className="btn text-black transition ease-in-out duration-500 transform hover:scale-110 max-md:w-full"
+          >Your Txn Details</a>
+        </div>)}
       </div>
        :
-      <div className="w-full mt-8 flex relative items-center justify-center">
+      <div className="w-full mt-4 flex relative items-center justify-center">
       <button 
       className="h-8 px-2 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
       onClick={() => {

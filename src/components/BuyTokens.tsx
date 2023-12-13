@@ -28,14 +28,12 @@ const BuyTokens = ({ setUoHash, setTxHash, provider, getTokenBalance, tokenBal}:
     setUoHash(uo.hash);
     console.log(uo.hash);
     const txHash = await provider.waitForUserOperationTransaction(uo.hash);
-    if(txHash){
-      setTxHash(txHash);
-      getTokenBalance();
-    }
+    setTxHash(txHash);
+    getTokenBalance();
     console.log(txHash);
   }, [provider, getTokenBalance]);
     return (
-        <div className="ml-4 py-7">
+        <div className="ml-4 py-8">
             <div className="pb-4">Token Balance: {tokenBal}</div>
             <form onSubmit={e => {
                 e.preventDefault();
