@@ -59,14 +59,7 @@ const Home = () => {
     const contractAddress: `0x${string}` = await provider.getAddress();
     setScaAddress(contractAddress);
     setNativeBalance((await alchemy.core.getBalance(contractAddress)).toString());
-    
-    const data = await publicClient.readContract({
-          address: '0x8179C04ed42683eafd59d66236484E090016Db56',
-          abi: tokenSaleAbi,
-          functionName: 'userHubBalance',
-          args: [contractAddress]
-        })
-    setTokenBal(data.toString());
+    getTokenBalance(); 
   },[connect, connectProviderToAccount, provider, alchemy.core, publicClient]);
 
   /*------ Logout Function ------*/
@@ -122,7 +115,6 @@ const Home = () => {
       setTxHash(txHash);
       getTokenBalance();
     }
-    
     console.log(txHash);
   }, [provider]);
 
