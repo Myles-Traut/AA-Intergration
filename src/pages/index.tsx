@@ -79,28 +79,47 @@ const Home = () => {
 
   return (
     <div className="ml-4 mt-4">
-    <div>Home</div>
+    <h1 className="text-center mb-4 text-2xl underline">Account Abstraction Demo</h1>
     <div className="flex relative items-center" >
       {isConnected ? 
-      <div>
-      <button
-      className="w-full h-12 px-6 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
-      onClick={() => {logout(); router.push('/')}}>Disconnect</button>
-      <div>Signer Address: {address}</div>
-      <div>Smart Wallet Address: {scaAddress}</div>
-      <div>Smart Wallet Balance: {nativeBalance}</div>
+      <div className="w-full mt-8">
+        <div className="w-full flex relative items-center justify-center">
+          <button
+          className="h-8 px-2 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
+          onClick={() => {logout(); router.push('/')}}>Disconnect</button>
+        </div>
+      <div className="my-6">
+        <div className="flex relative my-2 text-sm items-center justify-center">Signer Address: {address}</div>
+        <div className="flex relative my-2 text-sm items-center justify-center">Smart Wallet Address: {scaAddress}</div>
+        <div className="flex relative my-2 text-sm items-center justify-center">Smart Wallet Balance: {nativeBalance} MATIC</div>
+      </div>
       <hr />
       <br />
-      <SendNative setUoHash={setUoHash} setTxHash={setTxHash} provider={provider}/>
-      <BuyTokens setUoHash={setUoHash} setTxHash={setTxHash} provider={provider} getTokenBalance={getTokenBalance}/>
-      <div>Token Balance: {tokenBal}</div>
+      <div className="flex relative items-center justify-center">
+        <div className="mx-8 bg-gray-100 w-96">
+          <div className="flex relative items-center justify-center">
+            <SendNative setUoHash={setUoHash} setTxHash={setTxHash} provider={provider}/>
+          </div>
+        </div>
+        <div className="mx-8 bg-gray-100 w-96">
+          <div className="flex relative items-center justify-center">
+            <BuyTokens 
+              setUoHash={setUoHash} 
+              setTxHash={setTxHash} 
+              provider={provider} 
+              getTokenBalance={getTokenBalance}
+              tokenBal={tokenBal}/>
+          </div>
+        </div>
+      </div>
       </div>
        :
+      <div className="w-full mt-8 flex relative items-center justify-center">
       <button 
-      className="w-full h-12 px-6 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
+      className="h-8 px-2 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
       onClick={() => {
         login(signer);
-      }}>Connect Wallet</button>
+      }}>Connect Wallet</button></div>
       }
     </div>
   </div>)

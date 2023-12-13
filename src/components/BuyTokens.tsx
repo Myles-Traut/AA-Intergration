@@ -6,10 +6,11 @@ type Props = {
     setUoHash: Dispatch<SetStateAction<`0x${string}` | undefined>>,
     setTxHash: Dispatch<SetStateAction<`0x${string}` | undefined>>,
     provider: any,
-    getTokenBalance: any
+    getTokenBalance: any,
+    tokenBal: string,
 }
 
-const BuyTokens = ({ setUoHash, setTxHash, provider, getTokenBalance}: Props) => {
+const BuyTokens = ({ setUoHash, setTxHash, provider, getTokenBalance, tokenBal}: Props) => {
     const [tokenAmount, setTokenAmount] = useState<string>("");
     
     /*--- Buy Tokens Function ---*/
@@ -34,23 +35,28 @@ const BuyTokens = ({ setUoHash, setTxHash, provider, getTokenBalance}: Props) =>
     console.log(txHash);
   }, [provider, getTokenBalance]);
     return (
-        <div>
+        <div className="ml-4 py-7">
+            <div className="pb-4">Token Balance: {tokenBal}</div>
             <form onSubmit={e => {
-          e.preventDefault();
-          buyToken(tokenAmount);
-        }}>
-          <label htmlFor="Buy Token" className="pr-4">Amount to Spend</label>
+                e.preventDefault();
+                buyToken(tokenAmount);
+            }}>
+          <label className="pr-4" htmlFor="Buy Token">Amount to Spend</label>
+          <div>
             <input
               value={tokenAmount}
-              className="text-black pl-2" 
+              className="text-black my-2" 
               id="Buy"  
-              placeholder="0.001 ETH"
+              placeholder="0.001 MATIC"
               onChange={e => setTokenAmount(e.target.value)}
-          />
+            />
+          </div>
+          <div>
           <button type='submit'
-              className= "h-10 px-5 m-2 text-green-100 bg-green-700 rounded-lg hover:bg-green-800">
+              className= "h-6 px-2 mt-2 text-green-100 bg-green-700 rounded-lg hover:bg-green-800">
               Buy Token
           </button>
+          </div>
         </form>
         </div>
     )

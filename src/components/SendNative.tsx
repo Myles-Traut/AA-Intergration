@@ -27,41 +27,39 @@ const SendNative = ({ setUoHash, setTxHash, provider}: Props) => {
     },[provider, setTxHash, setUoHash]); 
 
     return(
-    <div>
+    <div className="ml-4 py-7">
         <form onSubmit={(e) => {
-                e.preventDefault();
-                sendNative(amount, to);
-            }}>
-                <label htmlFor="Transfer ETH" className="pr-4">Transfer ETH</label>
-                <div>
-                <input
-                    value={amount}
-                    className="text-black pl-2"  
-                    id="amount" 
-                    placeholder="0.001 ETH"
-                    onChange={e => setAmount(e.target.value)}
-                />
-                </div>
-                <div>
-                <input
-                    value= {to}
-                    className="text-black pl-2"  
-                    id="destination" 
-                    placeholder="0x.."
-                    onChange={e => setTo(e.target.value)}
-                />
-                </div>
-                <div className="mt-4">
-                    <button type='submit'
-                        className= "h-10 px-5 m-2 text-green-100 bg-green-700 rounded-lg hover:bg-green-800">
-                        Transfer ETH
-                    </button>
-                </div>
-                <hr />
-                <br />
-                <div>
+            e.preventDefault();
+            sendNative(amount, to);
+        }}>
+            <label htmlFor="Transfer MATIC">Transfer MATIC</label>
+            <div>
+            <input
+                value={amount}
+                className="text-black my-2"  
+                id="amount" 
+                placeholder="amount"
+                onChange={e => setAmount(e.target.value)}
+            />
             </div>
-            </form>
+            <div>
+            <input
+                value= {to}
+                className="text-black mt-4"  
+                id="destination" 
+                placeholder="recipient"
+                onChange={e => setTo(e.target.value)}
+            />
+            </div>
+            <div className="mt-4">
+                <button type='submit'
+                    className= "h-6 px-2 text-green-100 bg-green-700 rounded-lg hover:bg-green-800">
+                    Transfer MATIC
+                </button>
+            </div>
+            <div>
+        </div>
+        </form>
     </div>)
 }
 
