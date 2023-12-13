@@ -90,6 +90,19 @@ const Home = () => {
     console.log("Transaction Hash: ", txHash);
   },[provider]); 
 
+  /*--- Get Token Balance Function ---*/
+  const getTokenBalance = useCallback(async() => {
+    const contractAddr = await provider.getAddress();
+    const data = await publicClient.readContract({
+      address: '0x8179C04ed42683eafd59d66236484E090016Db56',
+      abi: tokenSaleAbi,
+      functionName: 'userHubBalance',
+      args: [contractAddr]
+    })
+    console.log(data);
+    setTokenBal(data.toString());
+  }, [publicClient]);
+
   /*--- Buy Tokens Function ---*/
   const buyToken = useCallback(async(tokenAmount: string) => {
     const uoCallData = encodeFunctionData({
@@ -105,36 +118,13 @@ const Home = () => {
     setUoHash(uo.hash);
     console.log(uo.hash);
     const txHash = await provider.waitForUserOperationTransaction(uo.hash);
-    setTxHash(txHash);
+    if(txHash){
+      setTxHash(txHash);
+      getTokenBalance();
+    }
+    
     console.log(txHash);
   }, [provider]);
-
-  /*--- Get Token Balance Function ---*/
-  const getTokenBalance = useCallback(async(signer: WalletClientSigner) => {
-    // const { signer } = useEoaSigner();
-    const provider: AlchemyProvider = new AlchemyProvider({
-      apiKey: alchemyApiKey,
-      chain: polygon,
-    }).connect(
-      (rpcClient) =>
-        new LightSmartContractAccount({
-          chain,
-          owner: signer,
-          factoryAddress: getDefaultLightAccountFactoryAddress(chain),
-          rpcClient,
-        })
-    );
-    
-    const contractAddr = await provider.getAddress();
-    const data = await publicClient.readContract({
-      address: '0x8179C04ed42683eafd59d66236484E090016Db56',
-      abi: tokenSaleAbi,
-      functionName: 'userHubBalance',
-      args: [contractAddr]
-    })
-    console.log(data);
-    setTokenBal(data.toString());
-  }, [publicClient]);
 
   return (
     <div className="ml-4 mt-4">
@@ -203,7 +193,7 @@ const Home = () => {
           </button>
         </form>
         
-        <div><button className= "h-10 px-5 m-2 text-green-100 bg-green-700 rounded-lg hover:bg-green-800" onClick={() => {getTokenBalance(signer)}}>Get balance</button>
+        <div><button className= "h-10 px-5 m-2 text-green-100 bg-green-700 rounded-lg hover:bg-green-800" onClick={() => {getTokenBalance()}}>Get balance</button>
         Token Balance: {tokenBal}</div>
       </div>
        :
