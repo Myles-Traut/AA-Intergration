@@ -2,7 +2,7 @@ import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { InjectedConnector } from 'wagmi/connectors/injected';
 import { useRouter } from 'next/router';
 import { WalletClientSigner } from "@alchemy/aa-core";
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useEoaSigner } from '@/hooks/useEoaSigner';
 import { useAlchemyProvider } from '@/hooks/useAlchemyProvider';
 
@@ -31,6 +31,7 @@ const Home = () => {
   const [scaAddress, setScaAddress] = useState<Address>();
   const [nativeBalance, setNativeBalance] = useState<string>("");
   const [tokenBal, setTokenBal] = useState<string>("");
+  const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(false);
 
   const [uoHash, setUoHash] = useState<Hash>();
   const [txHash, setTxHash] = useState<Hash>();
@@ -64,19 +65,19 @@ const Home = () => {
 
   /*--- Login Function ---*/
   const login: (signer: WalletClientSigner) => Promise<void> = useCallback(async (signer: WalletClientSigner) => {
-    connect();
     connectProviderToAccount(signer);
     const contractAddress: `0x${string}` = await provider.getAddress();
     setScaAddress(contractAddress);
+    setIsLoggedIn(true);
     setNativeBalance((await alchemy.core.getBalance(contractAddress)).toString());
     getTokenBalance(); 
-  },[connect, connectProviderToAccount, provider, alchemy.core, getTokenBalance]);
+  },[connectProviderToAccount, provider, alchemy.core, getTokenBalance]);
 
   /*------ Logout Function ------*/
   const logout: () => void = useCallback(() => {
-    disconnect();
     disconnectProviderFromAccount();
-  }, [disconnect, disconnectProviderFromAccount]);
+    setIsLoggedIn(false);
+  }, [disconnectProviderFromAccount]);
 
   return (
     <div className="ml-4 mt-4">
@@ -85,12 +86,12 @@ const Home = () => {
       </Head>
     <h1 className="text-center mb-2 text-2xl underline">Account Abstraction Demo</h1>
     <div className="flex relative items-center" >
-      {isConnected ? 
+      {isLoggedIn ? 
       <div className="w-full mt-4">
         <div className="w-full flex relative items-center justify-center">
           <button
           className="h-8 px-2 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
-          onClick={() => {logout(); router.push('/')}}>Disconnect</button>
+          onClick={() => {logout(); router.push('/')}}>Logout</button>
         </div>
       <div className="my-6">
         <div className="flex relative my-2 text-sm items-center justify-center">Signer Address: {address}</div>
@@ -127,11 +128,18 @@ const Home = () => {
       </div>
        :
       <div className="w-full mt-4 flex relative items-center justify-center">
-      <button 
+        {isConnected ? <button 
       className="h-8 px-2 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
       onClick={() => {
         login(signer);
-      }}>Connect Wallet</button></div>
+      }}>Login</button> :
+      <button 
+      className="h-8 px-2 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
+      onClick={() => {
+        connect();
+      }}>Connect</button>
+      }
+      </div>
       }
     </div>
   </div>)
