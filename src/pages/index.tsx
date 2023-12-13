@@ -88,30 +88,10 @@ const Home = () => {
     const txHash = await provider.waitForUserOperationTransaction(uoHash);
     setTxHash(txHash);
     console.log("Transaction Hash: ", txHash);
-  },[]); 
+  },[provider]); 
 
   /*--- Buy Tokens Function ---*/
-  const buyToken = useCallback(async(signer: WalletClientSigner, tokenAmount: any) => {
-    // const { signer } = useEoaSigner();
-    console.log("Token Amount", tokenAmount);
-    const provider: AlchemyProvider = new AlchemyProvider({
-      apiKey: alchemyApiKey,
-      chain: polygon,
-      opts: {
-        txMaxRetries: 20,
-        txRetryIntervalMs: 2_000,
-        txRetryMulitplier: 1.5,
-        minPriorityFeePerBid: 100_000_000n,
-      },
-    }).connect(
-      (rpcClient) =>
-        new LightSmartContractAccount({
-          chain,
-          owner: signer,
-          factoryAddress: getDefaultLightAccountFactoryAddress(chain),
-          rpcClient,
-        })
-    );
+  const buyToken = useCallback(async(tokenAmount: string) => {
     const uoCallData = encodeFunctionData({
       abi: tokenSaleAbi,
       functionName: 'buyHub',
@@ -122,11 +102,12 @@ const Home = () => {
       data: uoCallData,
       value: parseEther(tokenAmount),
     });
-    console.log(tokenAmount);
+    setUoHash(uo.hash);
     console.log(uo.hash);
     const txHash = await provider.waitForUserOperationTransaction(uo.hash);
+    setTxHash(txHash);
     console.log(txHash);
-  }, []);
+  }, [provider]);
 
   /*--- Get Token Balance Function ---*/
   const getTokenBalance = useCallback(async(signer: WalletClientSigner) => {
@@ -206,7 +187,7 @@ const Home = () => {
         
         <form onSubmit={e => {
           e.preventDefault();
-          buyToken(signer, tokenAmount);
+          buyToken(tokenAmount);
         }}>
           <label htmlFor="Buy Token" className="pr-4">Amount to Spend</label>
             <input
@@ -216,7 +197,6 @@ const Home = () => {
               placeholder="0.001 ETH"
               onChange={e => setTokenAmount(e.target.value)}
           />
-          <div>{tokenAmount}</div>
           <button type='submit'
               className= "h-10 px-5 m-2 text-green-100 bg-green-700 rounded-lg hover:bg-green-800">
               Buy Token
