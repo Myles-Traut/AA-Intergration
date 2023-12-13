@@ -31,7 +31,7 @@ const BuyTokens = ({ setUoHash, setTxHash, provider, getTokenBalance, tokenBal}:
     setTxHash(txHash);
     getTokenBalance();
     console.log(txHash);
-  }, [provider, getTokenBalance]);
+  }, [provider, getTokenBalance, setTxHash, setUoHash]);
     return (
         <div className="ml-4 py-8">
             <div className="pb-4">Token Balance: {tokenBal}</div>
@@ -43,7 +43,7 @@ const BuyTokens = ({ setUoHash, setTxHash, provider, getTokenBalance, tokenBal}:
           <div>
             <input
               value={tokenAmount}
-              className="text-black my-2" 
+              className="text-black my-2 text-xs" 
               id="Buy"  
               placeholder="0.001 MATIC"
               onChange={e => setTokenAmount(e.target.value)}

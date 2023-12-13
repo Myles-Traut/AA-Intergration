@@ -27,7 +27,7 @@ const SendNative = ({ setUoHash, setTxHash, provider}: Props) => {
     },[provider, setTxHash, setUoHash]); 
 
     return(
-    <div className="ml-4 py-7">
+    <div className="ml-4 py-8">
         <form onSubmit={(e) => {
             e.preventDefault();
             sendNative(amount, to);
@@ -36,7 +36,7 @@ const SendNative = ({ setUoHash, setTxHash, provider}: Props) => {
             <div>
             <input
                 value={amount}
-                className="text-black my-2"  
+                className="text-black my-2 text-xs"  
                 id="amount" 
                 placeholder="amount"
                 onChange={e => setAmount(e.target.value)}
@@ -45,7 +45,7 @@ const SendNative = ({ setUoHash, setTxHash, provider}: Props) => {
             <div>
             <input
                 value= {to}
-                className="text-black mt-4"  
+                className="text-black mt-4 w-80 text-xs"  
                 id="destination" 
                 placeholder="recipient"
                 onChange={e => setTo(e.target.value)}

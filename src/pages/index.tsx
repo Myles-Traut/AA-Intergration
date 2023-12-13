@@ -112,6 +112,7 @@ const Home = () => {
           </div>
         </div>
       </div>
+      {uoHash && (<div className="flex relative mt-1 text-xs items-center justify-center"> User Op Sent</div>)}
       {txHash && (
         <div className="flex relative mt-1 items-center justify-center">
           <a
