@@ -15,6 +15,7 @@ import { polygon } from 'viem/chains';
 
 import SendNative from '@/components/SendNative';
 import BuyTokens from '@/components/BuyTokens';
+import Head from 'next/head';
 
 ///@dev Token Presale contract addresses:
   // 0x8179C04ed42683eafd59d66236484E090016Db56 polygon
@@ -79,6 +80,9 @@ const Home = () => {
 
   return (
     <div className="ml-4 mt-4">
+      <Head>
+        <title>AA-Demo</title>
+      </Head>
     <h1 className="text-center mb-2 text-2xl underline">Account Abstraction Demo</h1>
     <div className="flex relative items-center" >
       {isConnected ? 
