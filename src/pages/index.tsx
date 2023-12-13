@@ -76,7 +76,7 @@ const Home = () => {
   }, [disconnect, disconnectProviderFromAccount]);
 
   /*--- Send Native Currency Function ---*/
-  const sendETH = useCallback(async(amount: string, to: string) => {
+  const sendNative = useCallback(async(amount: string, to: string) => {
     const { hash: uoHash } = await provider.sendUserOperation({
       target: to as Address, // The desired target contract address
       data: "0x", // The desired call data
@@ -171,7 +171,7 @@ const Home = () => {
       <br />
       <form onSubmit={(e) => {
             e.preventDefault();
-            sendETH(amount, to);
+            sendNative(amount, to);
         }}>
             <label htmlFor="Transfer ETH" className="pr-4">Transfer ETH</label>
             <div>
