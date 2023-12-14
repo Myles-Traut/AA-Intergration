@@ -16,6 +16,7 @@ import { polygon } from 'viem/chains';
 import SendNative from '@/components/SendNative';
 import BuyTokens from '@/components/BuyTokens';
 import Head from 'next/head';
+import ReadMe from '@/components/ReadMe';
 
 ///@dev Token Presale contract addresses:
   // 0x8179C04ed42683eafd59d66236484E090016Db56 polygon
@@ -135,6 +136,7 @@ const Home = () => {
         </div>)}
       </div>
        :
+      <div>
       <div className="w-full mt-4 flex relative items-center justify-center">
         {isConnected ? <button 
       className="h-8 px-2 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
@@ -147,6 +149,10 @@ const Home = () => {
         connect();
       }}>Connect</button>
       }
+      </div>
+      <div className="mt-12">
+        <ReadMe />
+      </div>
       </div>
       }
     </div>
