@@ -33,13 +33,14 @@ const BuyTokens = ({ setUoHash, setTxHash, provider, getTokenBalance, tokenBal}:
     console.log(txHash);
   }, [provider, getTokenBalance, setTxHash, setUoHash]);
     return (
-        <div className="ml-4 py-8">
-            <div className="pb-4">Token Balance: {tokenBal}</div>
+        <div className="ml-4 py-10">
+            <div className="bg-gray-300">Token Balance: {tokenBal}</div>
+            <label className="pr-4 text-sm" htmlFor="Buy Token">Buy Tokens</label>
             <form onSubmit={e => {
                 e.preventDefault();
                 buyToken(tokenAmount);
             }}>
-          <label className="pr-4" htmlFor="Buy Token">Amount to Spend</label>
+          <label className="pr-4 text-xs" htmlFor="Buy Token">Amount to Spend</label>
           <div>
             <input
               value={tokenAmount}
