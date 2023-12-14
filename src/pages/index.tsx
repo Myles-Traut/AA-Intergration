@@ -8,7 +8,7 @@ import { useAlchemyProvider } from '@/hooks/useAlchemyProvider';
 
 import { Alchemy, Network } from "alchemy-sdk";
 import { alchemyApiKey } from "@/config/client";
-import { parseEther, encodeFunctionData, Address, Hash } from 'viem';
+import { formatUnits, encodeFunctionData, Address, Hash } from 'viem';
 import { tokenSaleAbi } from '../../abis/TokenPresale';
 import { createPublicClient, http } from 'viem'
 import { polygon } from 'viem/chains';
@@ -61,8 +61,14 @@ const Home = () => {
       functionName: 'userHubBalance',
       args: [contractAddr]
     })
-    setTokenBal(data.toString());
+    setTokenBal(formatUnits(data, 18));
   }, [publicClient, provider]);
+
+  const getNativeBalance: (address: Address) => Promise<void> = useCallback(async(address: Address) => {
+    let balance: any = await alchemy.core.getBalance(address);
+    let bigBal: bigint = BigInt(balance);
+    setNativeBalance(formatUnits(bigBal, 18));
+  },[alchemy.core]);
 
   /*--- Login Function ---*/
   const login: (signer: WalletClientSigner) => Promise<void> = useCallback(async (signer: WalletClientSigner) => {
@@ -70,9 +76,9 @@ const Home = () => {
     const contractAddress: `0x${string}` = await provider.getAddress();
     setScaAddress(contractAddress);
     setIsLoggedIn(true);
-    setNativeBalance((await alchemy.core.getBalance(contractAddress)).toString());
+    getNativeBalance(contractAddress);
     getTokenBalance(); 
-  },[connectProviderToAccount, provider, alchemy.core, getTokenBalance]);
+  },[connectProviderToAccount, provider, getTokenBalance, getNativeBalance]);
 
   /*------ Logout Function ------*/
   const logout: () => void = useCallback(() => {
@@ -97,16 +103,16 @@ const Home = () => {
           onClick={() => {logout(); router.push('/')}}>Logout</button>
         </div>
       <div className="my-6">
+      <div className="w-full flex relative items-center justify-center text-2xl">Your Smart Wallet</div>
         <div className="flex relative my-2 text-sm items-center justify-center">Signer Address: {address}</div>
         <div className="flex relative my-2 text-sm items-center justify-center">Smart Wallet Address: {scaAddress}</div>
-        <div className="flex relative my-2 text-sm items-center justify-center">Smart Wallet Balance: {nativeBalance} MATIC</div>
       </div>
       <hr />
       <br />
       <div className="flex relative items-center justify-center">
         <div className="mx-8 bg-gray-100 w-96">
           <div className="flex relative items-center justify-center">
-            <SendNative setUoHash={setUoHash} setTxHash={setTxHash} provider={provider}/>
+            <SendNative setUoHash={setUoHash} setTxHash={setTxHash} provider={provider} getNativeBalance={getNativeBalance} nativeBalance={nativeBalance}/>
           </div>
         </div>
         <div className="mx-8 bg-gray-100 w-96">
