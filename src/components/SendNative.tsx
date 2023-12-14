@@ -7,9 +7,10 @@ type Props = {
     setTxHash: Dispatch<SetStateAction<`0x${string}` | undefined>>,
     provider: any,
     getNativeBalance: (address: Address) => Promise<void>,
+    nativeBalance: string
 }
 
-const SendNative = ({ setUoHash, setTxHash, provider, getNativeBalance}: Props) => {
+const SendNative = ({ setUoHash, setTxHash, provider, getNativeBalance, nativeBalance}: Props) => {
     const [amount, setAmount] = useState<string>('');
     const [to, setTo] = useState<string>("");
 
@@ -27,15 +28,16 @@ const SendNative = ({ setUoHash, setTxHash, provider, getNativeBalance}: Props) 
         setTxHash(txHash);
         console.log("Transaction Hash: ", txHash);
         getNativeBalance(await provider.getAddress());
-    },[provider, setTxHash, setUoHash]); 
+    },[provider, setTxHash, setUoHash, getNativeBalance]); 
 
     return(
     <div className="ml-4 py-8">
         <form onSubmit={(e) => {
             e.preventDefault();
             sendNative(amount, to);
-        }}>
-            <label htmlFor="Transfer MATIC">Transfer MATIC</label>
+        }}> 
+        <div className="bg-gray-300">Balance: {nativeBalance} MATIC</div>
+            <label className="text-sm" htmlFor="Transfer MATIC">Transfer MATIC</label>
             <div>
             <input
                 value={amount}
