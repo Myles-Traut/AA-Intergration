@@ -1,13 +1,15 @@
 import { Dispatch, SetStateAction, useCallback, useState } from 'react';
 import { Address, parseEther } from 'viem';
+import { useBalance } from 'wagmi';
 
 type Props = {
     setUoHash: Dispatch<SetStateAction<`0x${string}` | undefined>>,
     setTxHash: Dispatch<SetStateAction<`0x${string}` | undefined>>,
     provider: any,
+    getNativeBalance: (address: Address) => Promise<void>,
 }
 
-const SendNative = ({ setUoHash, setTxHash, provider}: Props) => {
+const SendNative = ({ setUoHash, setTxHash, provider, getNativeBalance}: Props) => {
     const [amount, setAmount] = useState<string>('');
     const [to, setTo] = useState<string>("");
 
@@ -24,6 +26,7 @@ const SendNative = ({ setUoHash, setTxHash, provider}: Props) => {
         const txHash = await provider.waitForUserOperationTransaction(uoHash);
         setTxHash(txHash);
         console.log("Transaction Hash: ", txHash);
+        getNativeBalance(await provider.getAddress());
     },[provider, setTxHash, setUoHash]); 
 
     return(

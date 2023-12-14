@@ -8,7 +8,7 @@ import { useAlchemyProvider } from '@/hooks/useAlchemyProvider';
 
 import { Alchemy, Network } from "alchemy-sdk";
 import { alchemyApiKey } from "@/config/client";
-import { parseEther, encodeFunctionData, Address, Hash } from 'viem';
+import { formatUnits, encodeFunctionData, Address, Hash } from 'viem';
 import { tokenSaleAbi } from '../../abis/TokenPresale';
 import { createPublicClient, http } from 'viem'
 import { polygon } from 'viem/chains';
@@ -60,8 +60,14 @@ const Home = () => {
       functionName: 'userHubBalance',
       args: [contractAddr]
     })
-    setTokenBal(data.toString());
+    setTokenBal(formatUnits(data, 18));
   }, [publicClient, provider]);
+
+  const getNativeBalance: (address: Address) => Promise<void> = async(address: Address) => {
+    let balance: any = await alchemy.core.getBalance(address);
+    let bigBal: bigint = BigInt(balance);
+    setNativeBalance(formatUnits(bigBal, 18));
+  };
 
   /*--- Login Function ---*/
   const login: (signer: WalletClientSigner) => Promise<void> = useCallback(async (signer: WalletClientSigner) => {
@@ -69,7 +75,8 @@ const Home = () => {
     const contractAddress: `0x${string}` = await provider.getAddress();
     setScaAddress(contractAddress);
     setIsLoggedIn(true);
-    setNativeBalance((await alchemy.core.getBalance(contractAddress)).toString());
+    getNativeBalance(contractAddress);
+    // setNativeBalance((await alchemy.core.getBalance(contractAddress)).toString());
     getTokenBalance(); 
   },[connectProviderToAccount, provider, alchemy.core, getTokenBalance]);
 
@@ -105,7 +112,7 @@ const Home = () => {
       <div className="flex relative items-center justify-center">
         <div className="mx-8 bg-gray-100 w-96">
           <div className="flex relative items-center justify-center">
-            <SendNative setUoHash={setUoHash} setTxHash={setTxHash} provider={provider}/>
+            <SendNative setUoHash={setUoHash} setTxHash={setTxHash} provider={provider} getNativeBalance={getNativeBalance}/>
           </div>
         </div>
         <div className="mx-8 bg-gray-100 w-96">
